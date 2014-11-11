@@ -1,0 +1,129 @@
+<html>
+	<head>
+	<title>CastAway</title>
+	<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.0.min.js"></script>
+	<script type="text/javascript" src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js"></script>
+	<script type="text/javascript">
+	var chromeCastSession = null;
+	var chromeCastMedia = null;
+
+	if (!chrome.cast || !chrome.cast.isAvailable)
+		setTimeout(init, 1000);
+
+	function init() {
+		chrome.cast.initialize(
+			new chrome.cast.ApiConfig(new chrome.cast.SessionRequest(chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID),
+			function (session) {
+				console.log('chrome.cast.ApiConfig ok');
+				initSession(session);
+				if (session.media.length)
+					initMedia(session.media[0]);
+				queue();
+			},
+			function (s) {
+				console.log("chrome.cast.SessionRequest.receiver " + s);
+			}), function () {
+				console.log("chrome.cast.initialize ok");
+			}, function () {
+				console.log("chrome.cast.initialize failed");
+			});
+		chrome.cast.requestSession(function (session) {
+			initSession(session);
+			console.log('chrome.cast.requestSession ok');
+		}, function (e) {
+			console.log('chrome.cast.requestSession error ' + e);
+		});
+	};
+
+	function onSuccess(e) { console.log('Command OK'); }
+	function onError() { console.log('Command Failed'); }
+
+	function loadTrack() {
+		var trackName = 'CastAway';
+		var duration = null;
+		$.ajax({
+			dataType: "json",
+			url: '/streaminfo'
+		})
+		.done(function (obj) {
+			trackName = obj.name;
+			duration = obj.duration;
+		})
+		.always(function () {
+			var mediaInfo = new chrome.cast.media.MediaInfo(window.location + 'stream', 'video/x-matroska');
+			mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
+			mediaInfo.metadata.title = trackName;
+			mediaInfo.duration = duration; // not used
+			mediaInfo.streamType = chrome.cast.media.StreamType.BUFFERED;
+			var request = new chrome.cast.media.LoadRequest(mediaInfo);
+			request.autoplay = true;
+			chromeCastSession.loadMedia(request, initMedia, onError);
+		});
+	}
+
+	function initSession(session) {
+		chromeCastSession = session;
+		chromeCastSession.addUpdateListener(continuousPlay);
+	}
+
+	function initMedia(media) {
+		if (media == undefined)
+			return;
+		chromeCastMedia = media;
+	}
+
+	function volume(vol) {
+		chromeCastSession.setReceiverVolumeLevel(vol, onSuccess, onError);
+	}
+	function mute(m) {
+		chromeCastSession.setReceiverMuted(m, onSuccess, onError);
+	}
+	function resume() {
+		chromeCastMedia.play(null, onSuccess, onError);
+	}
+	function pause() {
+		chromeCastMedia.pause(null, onSuccess, onError);
+	}
+
+	function continuousPlay() {
+		if (chromeCastMedia.playerState == 'IDLE' && chromeCastMedia.idleReason == "FINISHED")
+			$.ajax({
+				dataType: "json",
+				url: '/next'
+			})
+			.done(function (obj) {
+				loadTrack();
+			});
+	}
+
+	function queue() {
+		$.ajax({
+			dataType: "json",
+			url: '/queue'
+		})
+		.done(function (obj) {
+			queueDispatch(obj);
+		})
+		.always(function () {
+			setTimeout(queue, 1000);
+		});
+	}
+
+	function queueDispatch(obj) {
+		if ('volume' in obj)
+			volume(obj.volume);
+		if ('mute' in obj)
+			mute(obj.mute);
+		if ('playback' in obj) {
+			if (obj.playback == 'load')
+				loadTrack();
+			if (obj.playback == 'pause')
+				pause();
+			if (obj.playback == 'resume')
+				play();
+		}
+		console.log(obj);
+	}
+	</script>
+</head>
+</html>
