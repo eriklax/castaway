@@ -3,6 +3,11 @@
 	<title>CastAway</title>
 	<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.0.min.js"></script>
 	<script type="text/javascript" src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js"></script>
+	<style type="text/css">
+	body {
+		background-color: lightgray;
+	}
+	</style>
 	<script type="text/javascript">
 	var chromeCastSession = null;
 	var chromeCastMedia = null;
@@ -64,6 +69,7 @@
 	function initSession(session) {
 		chromeCastSession = session;
 		chromeCastSession.addUpdateListener(continuousPlay);
+		$("body").css({background: 'limegreen'})
 	}
 
 	function initMedia(media) {
