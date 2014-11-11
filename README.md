@@ -27,6 +27,7 @@ sh castfile.sh Desktop/Video.mkv
 Here are some REST examples, there are possible more in the code...
 ```
 curl -X POST -d "/Users/erik/Videos/video.mvk" http://127.0.0.1:8000/playlist/add
+find ~/Desktop -d 1 -name "*.mp4" -exec curl -X POST -d {} http://127.0.0.1:8000/playlist/add \;
 curl http://127.0.0.1:8000/streaminfo
 curl http://127.0.0.1:8000/playlist
 curl http://127.0.0.1:8000/{next,resume,pause,skip-to/#}
