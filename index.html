@@ -86,6 +86,8 @@
 	}
 
 	function continuousPlay() {
+		if (!chromeCastMedia)
+			return;
 		if (chromeCastMedia.playerState == 'IDLE' && chromeCastMedia.idleReason == "FINISHED")
 			$.ajax({
 				dataType: "json",
