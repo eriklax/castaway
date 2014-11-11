@@ -1,0 +1,104 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap-theme.min.css">
+		<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.0.min.js"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+		<title>CastAway</title>
+		<style type="text/css">
+			td.playlistitem {
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+			td.highlight {
+				font-weight: bold;
+			}
+		</style>
+		<script type="text/javascript">
+			var streamInfoTimer = null;
+			function reloadPlaylist() {
+				$.ajax({
+					dataType: "json",
+					url: '/playlist'
+				})
+				.done(function (obj) {
+					$("#playlist").empty();
+					for (i = 0; i < obj.length; ++i)
+					{
+						$("#playlist").append($('<tr>/').append($('<td>').addClass('small playlistitem').text(obj[i]).data('id', i).on('click', function() {
+							var id = $(this).data('id');
+							$.ajax({
+								dataType: "json",
+								url: '/skip-to/' + id
+							});
+						})));
+					}
+					if (streamInfoTimer == null)
+						streamInfo();
+				})
+			}
+			$.fn.filterByData = function(prop, val) {
+				return this.filter(
+						function() { return $(this).data(prop)===val; }
+						);
+			}
+			function streamInfo() {
+				$.ajax({
+					dataType: "json",
+					url: '/streaminfo'
+				})
+				.done(function (obj) {
+					document.title = obj.name;
+					var row = $("#playlist td").removeClass('highlight').filterByData('id', obj.id)[0];
+					$(row).addClass('highlight');
+				})
+				.always(function () {
+					streamInfoTimer = setTimeout(streamInfo, 3000);
+				});
+			}
+			$(document).ready(function() {
+				reloadPlaylist();
+				$("#pause").on('click', function() {
+					$.ajax({ dataType: "json", url: '/pause' })
+				});
+				$("#resume").on('click', function() {
+					$.ajax({ dataType: "json", url: '/resume' })
+				});
+				$("#next").on('click', function() {
+					$.ajax({ dataType: "json", url: '/next' })
+				});
+				$("#reloadPlaylist").on('click', function() {
+					reloadPlaylist();
+				});
+			});
+		</script>
+	</head>
+	<body>
+		<div class="container">
+			<p>
+				<div class="btn-group">
+					<button type="button" class="glyphicon glyphicon-play btn btn-primary btn-sm" id="resume"></button>
+					<button type="button" class="glyphicon glyphicon-pause btn btn-primary btn-sm" id="pause"></button>
+				</div>
+				<div class="btn-group">
+					<button type="button" class="glyphicon glyphicon-step-forward btn btn-primary btn-sm" id="next"></button>
+				</div>
+				<div class="btn-group pull-right">
+					<button type="button" class="glyphicon glyphicon-refresh btn btn-info btn-sm" id="reloadPlaylist"></button>
+				</div>
+			</p>
+			<table class="table">
+				<thead>
+					<th>Track</th>
+				</thead>
+				<tbody id="playlist">
+					<!-- playlist filled by ajax -->
+				</tbody>
+			</table>
+		</div>
+	</body>
+</html>

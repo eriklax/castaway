@@ -37,38 +37,65 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 		restURI = [x for x in self.path.split("/") if x]
 
 		if restURI == []:
+			self.send_response(200)
+			self.send_header("Content-Type", "text/html")
+			self.end_headers()
 			self.copyfile(urllib.urlopen('index.html'), self.wfile)
+			return
+		if restURI == ['mobile']:
+			self.send_response(200)
+			self.send_header("Content-Type", "text/html")
+			self.end_headers()
+			self.copyfile(urllib.urlopen('mobile.html'), self.wfile)
 			return
 
 		if restURI == ['playlist']:
-			self.wfile.write(json.dumps(playList))
+			self.send_response(200)
+			self.send_header("Content-Type", "text/plain")
+			self.end_headers()
+			self.wfile.write(json.dumps([os.path.basename(p) for p in playList]))
 			return
 
 		if restURI[0:2] == ['set', 'volume']:
+			self.send_response(200)
+			self.send_header("Content-Type", "text/plain")
+			self.end_headers()
 			castVolume = float(restURI[2])
 			self.wfile.write(json.dumps({"status": "ok"}))
 			castActionQueue.append(json.dumps({"volume" : castVolume}))
 			return
 
 		if restURI[0:2] == ['set', 'mute']:
+			self.send_response(200)
+			self.send_header("Content-Type", "text/plain")
+			self.end_headers()
 			castMute = restURI[2] == '1'
 			self.wfile.write(json.dumps({"status": "ok"}))
 			castActionQueue.append(json.dumps({"mute" : castMute}))
 			return
 
 		if restURI[0:2] == ['set', 'repeat']:
+			self.send_response(200)
+			self.send_header("Content-Type", "text/plain")
+			self.end_headers()
 			castRepeat = restURI[2] == '1'
 			self.wfile.write(json.dumps({"status": "ok"}))
 			castActionQueue.append(json.dumps({"repeat" : castRepeat}))
 			return
 
 		if restURI == ['pause'] or restURI == ['resume'] or restURI == ['load']:
+			self.send_response(200)
+			self.send_header("Content-Type", "text/plain")
+			self.end_headers()
 			self.wfile.write(json.dumps({"status": "ok"}))
 			castActionQueue.append(json.dumps({"playback" : restURI[0]}))
 			return
 
 		# set track id
 		if restURI[0:1] == ['skip-to']:
+			self.send_response(200)
+			self.send_header("Content-Type", "text/plain")
+			self.end_headers()
 			playListId = int(restURI[1:2][0])
 			self.wfile.write(json.dumps({"status": "ok"}))
 			castActionQueue.append(json.dumps({"playback" : "load"}))
@@ -76,6 +103,9 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
 		# next respects repeat
 		if restURI == ['next']:
+			self.send_response(200)
+			self.send_header("Content-Type", "text/plain")
+			self.end_headers()
 			if castRepeat == False:
 				playListId = playListId + 1
 			self.wfile.write(json.dumps({"status": "ok"}))
@@ -84,12 +114,19 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
 		# skip regardless of repeat
 		if restURI == ['skip']:
+			self.send_response(200)
+			self.send_header("Content-Type", "text/plain")
+			self.end_headers()
 			playListId = playListId + 1
 			self.wfile.write(json.dumps({"status": "ok"}))
 			castActionQueue.append(json.dumps({"playback" : "load"}))
 			return
 
 		if restURI == ['streaminfo']:
+			self.send_response(200)
+			self.send_header("Content-Type", "text/plain")
+			self.end_headers()
+
 			if len(playList) == 0:
 				self.wfile.write(json.dumps({}));
 				return
@@ -143,7 +180,7 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 						self.wfile.flush()
 						byte = p.stdout.read(1024 * 1024)
 			finally:
-				print "Stream terminated"
+				self.wfile.close()
 				p.kill()
 				null.close()
 			return
