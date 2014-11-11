@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 import SimpleHTTPServer, SocketServer, socket
-import urllib, subprocess, json, os
+import urllib, subprocess, json, os, sys
 
+ffmpegBinary = False
 castVolume = 1
 castMute = False
 castRepeat = False
@@ -32,7 +33,7 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     def do_GET(self):
 		global castRepeat, castVolume, castMute
-		global playListId, playList
+		global ffmpegBinary, playListId, playList
 		restURI = [x for x in self.path.split("/") if x]
 
 		if restURI == []:
@@ -94,7 +95,7 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 				return
 
 			ffmpeg = [
-						'./ffmpeg',
+						ffmpegBinary,
 						'-i', playList[playListId % len(playList)]
 					]
 
@@ -122,7 +123,7 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
 			# add support for subtitles...
 			ffmpeg = [
-						'./ffmpeg',
+						ffmpegBinary,
 						'-y',
 						'-i', playList[playListId % len(playList)],
 						'-vcodec', 'copy',
@@ -160,6 +161,12 @@ class FastrebindServer(SocketServer.ThreadingTCPServer):
     def server_bind(self):
 		self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self.socket.bind(self.server_address)
+
+p = subprocess.Popen(['which', 'ffmpeg', './ffmpeg'], stdout=subprocess.PIPE)
+ffmpegBinary = p.communicate()[0].split('\n')[0]
+if not ffmpegBinary:
+	print 'missing ffmpeg, go get it! https://www.ffmpeg.org/download.html'
+	sys.exit(1)
 
 try:
 	httpd = FastrebindServer(('0.0.0.0', 8000), ChromeCast)
