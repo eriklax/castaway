@@ -61,7 +61,7 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 			castActionQueue.append(json.dumps({"repeat" : castRepeat}))
 			return
 
-		if restURI == ['pause'] or restURI == ['resume']:
+		if restURI == ['pause'] or restURI == ['resume'] or restURI == ['load']:
 			self.wfile.write(json.dumps({"status": "ok"}))
 			castActionQueue.append(json.dumps({"playback" : restURI[0]}))
 			return
