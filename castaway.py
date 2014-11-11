@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import SimpleHTTPServer, SocketServer, socket
 import urllib, subprocess, json, os
 
@@ -7,10 +9,16 @@ castRepeat = False
 castActionQueue = []
 
 playListId = 0
-playList = [] #['v1.mp4', 'v2.mp4', 'v3.mp4']
+playList = []
 
 class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
     def do_POST(self):
+		if self.client_address[0] != '127.0.0.1':
+			self.send_response(403)
+			self.end_headers()
+			self.wfile.write('use 127.0.0.1 when adding files')
+			return
+
 		global playList
 		restURI = [x for x in self.path.split("/") if x]
 
