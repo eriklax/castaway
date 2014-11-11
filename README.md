@@ -9,22 +9,22 @@ castaway.py requires ffmpeg (http://ffmpeg.org/) in the $PATH or in same directo
 
 ### How to stream your first file
 
-Start the castaway server
+Start the castaway server.
 ```
 python castaway.py
 ```
-Go to your LAN IP (eg. http://192.168.1.71:8000), 127.0.0.1 will NOT work.
+Go to your LAN IP (eg. http://192.168.1.71:8000), 127.0.0.1 will NOT work. As of now, it should turn "limegreen" when ready :)
 ```
-open -a 'Google Chrome' http://192.168.1.72:8000/
+open -a 'Google Chrome' http://192.168.1.71:8000/
 ```
-Add files to stream using castfile.sh
+Add files to stream using castfile.sh to cast them directly.
 ```
 sh castfile.sh Desktop/Video.mkv
 ```
 
-### Command Line Interface
+### REST API
 
-There are some commands, and possible more in the API but here are some...
+Here are some REST examples, there are possible more in the code...
 ```
 curl -X POST -d "/Users/erik/Videos/video.mvk" http://127.0.0.1:8000/playlist/add
 curl http://127.0.0.1:8000/streaminfo
