@@ -23,7 +23,6 @@
 				initSession(session);
 				if (session.media.length)
 					initMedia(session.media[0]);
-				queue();
 			},
 			function (s) {
 				console.log("chrome.cast.SessionRequest.receiver " + s);
@@ -70,6 +69,7 @@
 		chromeCastSession = session;
 		chromeCastSession.addUpdateListener(continuousPlay);
 		$("body").css({background: 'limegreen'})
+		queue();
 	}
 
 	function initMedia(media) {
