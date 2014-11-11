@@ -76,6 +76,7 @@
 		if (media == undefined)
 			return;
 		chromeCastMedia = media;
+		$("#currentTrack").text(chromeCastMedia.media.metadata.title);
 	}
 
 	function volume(vol) {
@@ -134,4 +135,7 @@
 	}
 	</script>
 </head>
+<body>
+<h3 id="currentTrack"></h3>
+</body>
 </html>
