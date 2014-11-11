@@ -25,7 +25,7 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 		content = self.rfile.read(int(self.headers.getheader('content-length')))
 		if restURI == ['playlist', 'add']:
 			playList.append(content);
-			self.wfile.write(json.dumps({"status": "ok"}))
+			self.wfile.write(json.dumps({"id": len(playList) - 1}))
 			return
 
 		return
