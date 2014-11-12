@@ -29,11 +29,11 @@
 					$('#playlist').empty();
 					for (i = 0; i < obj.length; ++i)
 					{
-						$('#playlist').append($('<tr>/').append($('<td>').addClass('small playlistitem').text(obj[i]).data('id', i).on('click', function() {
-							var id = $(this).data('id');
+						$('#playlist').append($('<tr>/').append($('<td>').addClass('small playlistitem').text(obj[i].name).data('uuid', obj[i].uuid).on('click', function() {
+							var uuid = $(this).data('uuid');
 							$.ajax({
 								dataType: 'json',
-								url: '/skip-to/' + id
+								url: '/skip-to/' + uuid
 							});
 						})));
 					}

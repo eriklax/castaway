@@ -43,12 +43,12 @@
 	function onSuccess(m) { console.log(m); }
 	function onError(e) { console.log(e); }
 
-	function loadTrack() {
+	function loadTrack(uuid) {
 		var trackName = 'CastAway';
 		var duration = null;
 		$.ajax({
 			dataType: 'json',
-			url: '/streaminfo'
+			url: '/streaminfo/' + uuid
 		})
 		.done(function (obj) {
 			trackName = obj.name;
@@ -56,7 +56,7 @@
 		})
 		.always(function () {
 			var mediaInfo = new chrome.cast.media.MediaInfo(
-				window.location.href.replace(window.location.pathname, '/stream'), 'video/x-matroska');
+				window.location.href.replace(window.location.pathname, '/stream/' + uuid), 'video/x-matroska');
 			mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
 			mediaInfo.metadata.title = trackName;
 			mediaInfo.duration = duration; // not used
@@ -132,7 +132,7 @@
 			mute(obj.mute);
 		if ('playback' in obj) {
 			if (obj.playback == 'load')
-				loadTrack();
+				loadTrack(obj.uuid);
 			if (obj.playback == 'pause')
 				pause();
 			if (obj.playback == 'resume')
