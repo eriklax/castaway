@@ -14,6 +14,7 @@ class Playlist:
 	items = []
 	shuffle = False
 	repeat = False
+	repeatall = False
 
 	def insert(self, track):
 		item = Item(track)
@@ -38,4 +39,6 @@ class Playlist:
 				if self.repeat:
 					return item
 				next = True
+		if next and not self.repeatall:
+			return None
 		return self.items[0]

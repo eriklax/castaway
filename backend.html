@@ -96,9 +96,17 @@
 	function mute(m) { chromeCastSession.setReceiverMuted(m, onSuccess, onError); }
 	function resume() { chromeCastMedia.play(null, onSuccess, onError); }
 	function pause() { chromeCastMedia.pause(null, onSuccess, onError); }
+	function stop() { chromeCastMedia.stop(null, onSuccess, onError); }
 	function continuousPlay() {
 		if (!chromeCastMedia)
 			return;
+		if (chromeCastMedia.playerState == 'PLAYING' && chromeCastMedia.idleReason == null) {
+			$.ajax({
+				dataType: 'json',
+				method: 'POST',
+				url: '/streamuuid/'
+			});
+		}
 		console.log('continuousPlay: ' + chromeCastMedia.playerState + ' ' + chromeCastMedia.idleReason);
 		if (waitForNextPlay)
 			return;
@@ -121,6 +129,8 @@
 			if ('volume' in obj) volume(obj.volume);
 			if ('mute' in obj) mute(obj.mute);
 			if ('playback' in obj) {
+				if (obj.playback == 'stop')
+					stop();
 				if (obj.playback == 'load')
 					loadTrack(obj.uuid);
 				if (obj.playback == 'pause')

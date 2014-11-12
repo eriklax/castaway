@@ -49,6 +49,8 @@
 						else $("#shuffle").removeClass('btn-success');
 					if (playlist.repeat) $("#repeat").addClass('btn-success');
 						else $("#repeat").removeClass('btn-success');
+					if (playlist.repeatall) $("#repeatall").addClass('btn-success');
+						else $("#repeat").removeClass('btn-success');
 					if (streamInfoTimer == null)
 						streamInfo();
 				})
@@ -78,6 +80,7 @@
 				$('#reload').on('click', function() { reloadPlaylist(); });
 				$('#pause').on('click', function() { $.ajax({ dataType: 'json', url: '/pause' }) });
 				$('#resume').on('click', function() { $.ajax({ dataType: 'json', url: '/resume' }) });
+				$('#stop').on('click', function() { $.ajax({ dataType: 'json', url: '/stop' }) });
 				$('#next').on('click', function() { $.ajax({ dataType: 'json', url: '/next' }) });
 				$('#shuffle').on('click', function() {
 					$.ajax({ dataType: 'json', url: '/set/shuffle/' + ($(this).hasClass('btn-success')?'0':'1') })
@@ -85,6 +88,10 @@
 				});
 				$('#repeat').on('click', function() {
 					$.ajax({ dataType: 'json', url: '/set/repeat/' + ($(this).hasClass('btn-success')?'0':'1') })
+					$(this).toggleClass('btn-success');
+				});
+				$('#repeatall').on('click', function() {
+					$.ajax({ dataType: 'json', url: '/set/repeatall/' + ($(this).hasClass('btn-success')?'0':'1') })
 					$(this).toggleClass('btn-success');
 				});
 			});
@@ -96,6 +103,7 @@
 				<div class="btn-group">
 					<button type="button" class="glyphicon glyphicon-play btn btn-primary btn-sm" id="resume" title="Resume"></button>
 					<button type="button" class="glyphicon glyphicon-pause btn btn-primary btn-sm" id="pause" title="Pause"></button>
+					<button type="button" class="glyphicon glyphicon-stop btn btn-primary btn-sm" id="stop" title="Stop"></button>
 				</div>
 				<div class="btn-group">
 					<button type="button" class="glyphicon glyphicon-step-forward btn btn-primary btn-sm" id="next" title="Next"></button>
@@ -103,6 +111,7 @@
 				<div class="btn-group">
 					<button type="button" class="glyphicon glyphicon-random btn btn-sm" id="shuffle" title="Shuffle"></button>
 					<button type="button" class="glyphicon glyphicon-repeat btn btn-sm" id="repeat" title="Repeat"></button>
+					<button type="button" class="glyphicon glyphicon-retweet btn btn-sm" id="repeatall" title="Repeat all"></button>
 				</div>
 				<div class="btn-group pull-right">
 					<button type="button" class="glyphicon glyphicon-refresh btn btn-info btn-sm" id="reload" title="Reload playlist"></button>

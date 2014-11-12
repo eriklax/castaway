@@ -29,12 +29,12 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 			self.wfile.write(json.dumps({'uuid': item.uuid}))
 			return
 
-		if restURI[0:1] == ['streamuuid'] and len(restURI) == 2:
+		if restURI[0:1] == ['streamuuid']:
 			global castingUUID
 			self.send_response(200)
 			self.send_header('Content-Type', 'application/json')
 			self.end_headers()
-			castingUUID = restURI[1]
+			castingUUID = restURI[1] if len(restURI) > 1 else None
 			self.wfile.write(json.dumps({'uuid': castingUUID}))
 			return
 		return
@@ -68,6 +68,7 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 			l = dict()
 			l['tracks'] = [{'name': p.name, 'uuid': p.uuid} for p in playList.items]
 			l['repeat'] = playList.repeat
+			l['repeatall'] = playList.repeatall
 			l['shuffle'] = playList.shuffle
 			self.wfile.write(json.dumps(l))
 			return
@@ -82,12 +83,16 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 		# next respects repeat
 		if restURI[0:1] == ['next']:
 			try:
-				uuid = playList.nexttrack(restURI[1] if len(restURI) > 1 else castingUUID).uuid
+				track = playList.nexttrack(restURI[1] if len(restURI) > 1 else castingUUID)
 				self.send_response(200)
 				self.send_header('Content-Type', 'application/json')
 				self.end_headers()
-				self.wfile.write(json.dumps({'uuid': uuid}))
-				castActionQueue.append(json.dumps({'playback': 'load', 'uuid': uuid}))
+				if not track:
+					self.wfile.write(json.dumps({'playback': 'stop'}))
+					castActionQueue.append(json.dumps({'playback': 'stop'}))
+					return
+				self.wfile.write(json.dumps({'uuid': track.uuid}))
+				castActionQueue.append(json.dumps({'playback': 'load', 'uuid': track.uuid}))
 			except IndexError:
 				self.send_response(404)
 				self.send_header('Content-Type', 'application/json')
@@ -102,6 +107,14 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 			self.end_headers()
 			playList.repeat = restURI[2] == '1'
 			self.wfile.write(json.dumps({'repeat': playList.repeat}))
+			return
+
+		if restURI[0:2] == ['set', 'repeatall'] and len(restURI) == 3:
+			self.send_response(200)
+			self.send_header('Content-Type', 'application/json')
+			self.end_headers()
+			playList.repeatall = restURI[2] == '1'
+			self.wfile.write(json.dumps({'repeatall': playList.repeatall}))
 			return
 
 		# shuffle on /next
@@ -133,7 +146,7 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 			return
 
 		# playback control
-		if restURI == ['pause'] or restURI == ['resume']:
+		if restURI == ['pause'] or restURI == ['resume'] or restURI == ['stop']:
 			self.send_response(200)
 			self.send_header('Content-Type', 'application/json')
 			self.end_headers()
