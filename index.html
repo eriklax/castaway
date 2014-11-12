@@ -11,6 +11,7 @@
 	<script type="text/javascript">
 	var chromeCastSession = null;
 	var chromeCastMedia = null;
+	var waitForNextPlay = false;
 
 	if (!chrome.cast || !chrome.cast.isAvailable)
 		setTimeout(init, 1000);
@@ -25,11 +26,11 @@
 					initMedia(session.media[0]);
 			},
 			function (s) {
-				console.log("chrome.cast.SessionRequest.receiver " + s);
+				console.log('chrome.cast.SessionRequest.receiver ' + s);
 			}), function () {
-				console.log("chrome.cast.initialize ok");
+				console.log('chrome.cast.initialize ok');
 			}, function () {
-				console.log("chrome.cast.initialize failed");
+				console.log('chrome.cast.initialize failed');
 			});
 		chrome.cast.requestSession(function (session) {
 			initSession(session);
@@ -39,14 +40,14 @@
 		});
 	};
 
-	function onSuccess(e) { console.log('Command OK'); }
-	function onError() { console.log('Command Failed'); }
+	function onSuccess(m) { console.log(m); }
+	function onError(e) { console.log(e); }
 
 	function loadTrack() {
 		var trackName = 'CastAway';
 		var duration = null;
 		$.ajax({
-			dataType: "json",
+			dataType: 'json',
 			url: '/streaminfo'
 		})
 		.done(function (obj) {
@@ -67,8 +68,9 @@
 
 	function initSession(session) {
 		chromeCastSession = session;
+		console.log('Starting continuousPlay');
 		chromeCastSession.addUpdateListener(continuousPlay);
-		$("body").css({background: 'limegreen'})
+		$('body').css({background: 'limegreen'})
 		queue();
 	}
 
@@ -76,7 +78,8 @@
 		if (media == undefined)
 			return;
 		chromeCastMedia = media;
-		$("#currentTrack").text(chromeCastMedia.media.metadata.title);
+		$('#currentTrack').text(chromeCastMedia.media.metadata.title);
+		waitForNextPlay = false;
 	}
 
 	function volume(vol) {
@@ -95,19 +98,22 @@
 	function continuousPlay() {
 		if (!chromeCastMedia)
 			return;
-		if (chromeCastMedia.playerState == 'IDLE' && chromeCastMedia.idleReason == "FINISHED")
+		console.log('continuousPlay: ' + chromeCastMedia.playerState + ' ' + chromeCastMedia.idleReason);
+		if (waitForNextPlay)
+			return;
+		if (chromeCastMedia.playerState == 'IDLE' && chromeCastMedia.idleReason == 'FINISHED') {
+			waitForNextPlay = true;
+			console.log('continuousPlay /next');
 			$.ajax({
-				dataType: "json",
+				dataType: 'json',
 				url: '/next'
-			})
-			.done(function (obj) {
-				loadTrack();
 			});
+		}
 	}
 
 	function queue() {
 		$.ajax({
-			dataType: "json",
+			dataType: 'json',
 			url: '/queue'
 		})
 		.done(function (obj) {

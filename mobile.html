@@ -22,17 +22,17 @@
 			var streamInfoTimer = null;
 			function reloadPlaylist() {
 				$.ajax({
-					dataType: "json",
+					dataType: 'json',
 					url: '/playlist'
 				})
 				.done(function (obj) {
-					$("#playlist").empty();
+					$('#playlist').empty();
 					for (i = 0; i < obj.length; ++i)
 					{
-						$("#playlist").append($('<tr>/').append($('<td>').addClass('small playlistitem').text(obj[i]).data('id', i).on('click', function() {
+						$('#playlist').append($('<tr>/').append($('<td>').addClass('small playlistitem').text(obj[i]).data('id', i).on('click', function() {
 							var id = $(this).data('id');
 							$.ajax({
-								dataType: "json",
+								dataType: 'json',
 								url: '/skip-to/' + id
 							});
 						})));
@@ -48,12 +48,12 @@
 			}
 			function streamInfo() {
 				$.ajax({
-					dataType: "json",
+					dataType: 'json',
 					url: '/streaminfo'
 				})
 				.done(function (obj) {
 					document.title = obj.name;
-					var row = $("#playlist td").removeClass('highlight').filterByData('id', obj.id)[0];
+					var row = $('#playlist td').removeClass('highlight').filterByData('id', obj.id)[0];
 					$(row).addClass('highlight');
 				})
 				.always(function () {
@@ -62,16 +62,16 @@
 			}
 			$(document).ready(function() {
 				reloadPlaylist();
-				$("#pause").on('click', function() {
-					$.ajax({ dataType: "json", url: '/pause' })
+				$('#pause').on('click', function() {
+					$.ajax({ dataType: 'json', url: '/pause' })
 				});
-				$("#resume").on('click', function() {
-					$.ajax({ dataType: "json", url: '/resume' })
+				$('#resume').on('click', function() {
+					$.ajax({ dataType: 'json', url: '/resume' })
 				});
-				$("#next").on('click', function() {
-					$.ajax({ dataType: "json", url: '/next' })
+				$('#next').on('click', function() {
+					$.ajax({ dataType: 'json', url: '/next' })
 				});
-				$("#reloadPlaylist").on('click', function() {
+				$('#reloadPlaylist').on('click', function() {
 					reloadPlaylist();
 				});
 			});

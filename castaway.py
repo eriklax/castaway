@@ -21,12 +21,12 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 			return
 
 		global playList
-		restURI = [x for x in self.path.split("/") if x]
+		restURI = [x for x in self.path.split('/') if x]
 
 		content = self.rfile.read(int(self.headers.getheader('content-length')))
 		if restURI == ['playlist', 'add']:
 			playList.append(content);
-			self.wfile.write(json.dumps({"id": len(playList) - 1}))
+			self.wfile.write(json.dumps({'id': len(playList) - 1}))
 			return
 
 		return
@@ -34,97 +34,97 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
     def do_GET(self):
 		global castRepeat, castVolume, castMute
 		global ffmpegBinary, playListId, playList
-		restURI = [x for x in self.path.split("/") if x]
+		restURI = [x for x in self.path.split('/') if x]
 
 		if restURI == []:
 			self.send_response(200)
-			self.send_header("Content-Type", "text/html")
+			self.send_header('Content-Type', 'text/html')
 			self.end_headers()
 			self.copyfile(urllib.urlopen('index.html'), self.wfile)
 			return
 		if restURI == ['mobile']:
 			self.send_response(200)
-			self.send_header("Content-Type", "text/html")
+			self.send_header('Content-Type', 'text/html')
 			self.end_headers()
 			self.copyfile(urllib.urlopen('mobile.html'), self.wfile)
 			return
 
 		if restURI == ['playlist']:
 			self.send_response(200)
-			self.send_header("Content-Type", "text/plain")
+			self.send_header('Content-Type', 'application/json')
 			self.end_headers()
 			self.wfile.write(json.dumps([os.path.basename(p) for p in playList]))
 			return
 
 		if restURI[0:2] == ['set', 'volume']:
 			self.send_response(200)
-			self.send_header("Content-Type", "text/plain")
+			self.send_header('Content-Type', 'application/json')
 			self.end_headers()
 			castVolume = float(restURI[2])
-			self.wfile.write(json.dumps({"status": "ok"}))
-			castActionQueue.append(json.dumps({"volume" : castVolume}))
+			self.wfile.write(json.dumps({'status': 'ok'}))
+			castActionQueue.append(json.dumps({'volume' : castVolume}))
 			return
 
 		if restURI[0:2] == ['set', 'mute']:
 			self.send_response(200)
-			self.send_header("Content-Type", "text/plain")
+			self.send_header('Content-Type', 'application/json')
 			self.end_headers()
 			castMute = restURI[2] == '1'
-			self.wfile.write(json.dumps({"status": "ok"}))
-			castActionQueue.append(json.dumps({"mute" : castMute}))
+			self.wfile.write(json.dumps({'status': 'ok'}))
+			castActionQueue.append(json.dumps({'mute' : castMute}))
 			return
 
 		if restURI[0:2] == ['set', 'repeat']:
 			self.send_response(200)
-			self.send_header("Content-Type", "text/plain")
+			self.send_header('Content-Type', 'application/json')
 			self.end_headers()
 			castRepeat = restURI[2] == '1'
-			self.wfile.write(json.dumps({"status": "ok"}))
-			castActionQueue.append(json.dumps({"repeat" : castRepeat}))
+			self.wfile.write(json.dumps({'status': 'ok'}))
+			castActionQueue.append(json.dumps({'repeat' : castRepeat}))
 			return
 
 		if restURI == ['pause'] or restURI == ['resume'] or restURI == ['load']:
 			self.send_response(200)
-			self.send_header("Content-Type", "text/plain")
+			self.send_header('Content-Type', 'application/json')
 			self.end_headers()
-			self.wfile.write(json.dumps({"status": "ok"}))
-			castActionQueue.append(json.dumps({"playback" : restURI[0]}))
+			self.wfile.write(json.dumps({'status': 'ok'}))
+			castActionQueue.append(json.dumps({'playback' : restURI[0]}))
 			return
 
 		# set track id
 		if restURI[0:1] == ['skip-to']:
 			self.send_response(200)
-			self.send_header("Content-Type", "text/plain")
+			self.send_header('Content-Type', 'application/json')
 			self.end_headers()
 			playListId = int(restURI[1:2][0])
-			self.wfile.write(json.dumps({"status": "ok"}))
-			castActionQueue.append(json.dumps({"playback" : "load"}))
+			self.wfile.write(json.dumps({'status': 'ok'}))
+			castActionQueue.append(json.dumps({'playback' : 'load'}))
 			return
 
 		# next respects repeat
 		if restURI == ['next']:
 			self.send_response(200)
-			self.send_header("Content-Type", "text/plain")
+			self.send_header('Content-Type', 'application/json')
 			self.end_headers()
 			if castRepeat == False:
 				playListId = playListId + 1
-			self.wfile.write(json.dumps({"status": "ok"}))
-			castActionQueue.append(json.dumps({"playback" : "load"}))
+			self.wfile.write(json.dumps({'status': 'ok'}))
+			castActionQueue.append(json.dumps({'playback' : 'load'}))
 			return
 
 		# skip regardless of repeat
 		if restURI == ['skip']:
 			self.send_response(200)
-			self.send_header("Content-Type", "text/plain")
+			self.send_header('Content-Type', 'application/json')
 			self.end_headers()
 			playListId = playListId + 1
-			self.wfile.write(json.dumps({"status": "ok"}))
-			castActionQueue.append(json.dumps({"playback" : "load"}))
+			self.wfile.write(json.dumps({'status': 'ok'}))
+			castActionQueue.append(json.dumps({'playback' : 'load'}))
 			return
 
 		if restURI == ['streaminfo']:
 			self.send_response(200)
-			self.send_header("Content-Type", "text/plain")
+			self.send_header('Content-Type', 'application/json')
 			self.end_headers()
 
 			if len(playList) == 0:
@@ -138,13 +138,13 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
 			# more stream info
 			p = subprocess.Popen(ffmpeg, shell=False, stdin=None, stderr=subprocess.PIPE, bufsize=0)
-			l = [s for s in p.communicate()[1].split('\n') if "Duration" in s]
+			l = [s for s in p.communicate()[1].split('\n') if 'Duration' in s]
 			if len(l):
 				l = [[x.strip().lower() for x in s.strip().split(':', 1)] for s in l[0].split(',')]
 			l = dict(l)
 			l['duration'] = sum([a * b for a, b in zip([3600, 60, 1], map(int, l['duration'].split('.')[0].split(':')))])
 			l['name'] = os.path.basename(playList[playListId % len(playList)])
-			l['id'] = playListId
+			l['id'] = playListId % len(playList)
 			self.wfile.write(json.dumps(l))
 			return
 
@@ -155,7 +155,7 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 				return
 
 			self.send_response(200)
-			self.send_header("Content-Type", "video/x-matroska")
+			self.send_header('Content-Type', 'video/x-matroska')
 			self.end_headers()
 
 			# add support for subtitles...
@@ -171,18 +171,16 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 						'-'
 					]
 			
-			null = open("/dev/null", "w")
+			null = open('/dev/null', 'w')
 			p = subprocess.Popen(ffmpeg, shell=False, stdin=None, stderr=null, stdout=subprocess.PIPE, bufsize=0)
-			try:
-				byte = p.stdout.read(1024 * 1024)
-				while byte:
+			byte = p.stdout.read(1024 * 1024)
+			while byte:
+					try:
 						self.wfile.write(byte)
 						self.wfile.flush()
-						byte = p.stdout.read(1024 * 1024)
-			finally:
-				self.wfile.close()
-				p.kill()
-				null.close()
+					except:
+						return	
+					byte = p.stdout.read(1024 * 1024)
 			return
 
 		# pop action from queue
@@ -207,7 +205,7 @@ if not ffmpegBinary:
 
 try:
 	httpd = FastrebindServer(('0.0.0.0', 8000), ChromeCast)
-	print "Ready to CastAway!"
+	print 'Ready to CastAway!'
 	httpd.serve_forever()
 except KeyboardInterrupt:
 	httpd.socket.close()
