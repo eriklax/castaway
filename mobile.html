@@ -27,9 +27,10 @@
 				})
 				.done(function (obj) {
 					$('#playlist').empty();
-					for (i = 0; i < obj.length; ++i)
+					for (i = 0; i < obj.tracks.length; ++i)
 					{
-						$('#playlist').append($('<tr>/').append($('<td>').addClass('small playlistitem').text(obj[i].name).data('uuid', obj[i].uuid).on('click', function() {
+						var track = obj.tracks[i];
+						$('#playlist').append($('<tr>/').append($('<td>').addClass('small playlistitem').text(track.name).data('uuid', track.uuid).on('click', function() {
 							var uuid = $(this).data('uuid');
 							$.ajax({
 								dataType: 'json',
@@ -37,6 +38,10 @@
 							});
 						})));
 					}
+					if (obj.shuffle) $("#shuffle").addClass('btn-success');
+					else $("#shuffle").removeClass('btn-success');
+					if (obj.repeat) $("#repeat").addClass('btn-success');
+					else $("#repeat").removeClass('btn-success');
 					if (streamInfoTimer == null)
 						streamInfo();
 				})
@@ -71,6 +76,14 @@
 				$('#next').on('click', function() {
 					$.ajax({ dataType: 'json', url: '/next' })
 				});
+				$('#shuffle').on('click', function() {
+					$.ajax({ dataType: 'json', url: '/set/shuffle/' + ($(this).hasClass('btn-success')?'0':'1') })
+					$(this).toggleClass('btn-success');
+				});
+				$('#repeat').on('click', function() {
+					$.ajax({ dataType: 'json', url: '/set/repeat/' + ($(this).hasClass('btn-success')?'0':'1') })
+					$(this).toggleClass('btn-success');
+				});
 				$('#reloadPlaylist').on('click', function() {
 					reloadPlaylist();
 				});
@@ -86,6 +99,10 @@
 				</div>
 				<div class="btn-group">
 					<button type="button" class="glyphicon glyphicon-step-forward btn btn-primary btn-sm" id="next"></button>
+				</div>
+				<div class="btn-group">
+					<button type="button" class="glyphicon glyphicon-random btn btn-sm" id="shuffle"></button>
+					<button type="button" class="glyphicon glyphicon-repeat btn btn-sm" id="repeat"></button>
 				</div>
 				<div class="btn-group pull-right">
 					<button type="button" class="glyphicon glyphicon-refresh btn btn-info btn-sm" id="reloadPlaylist"></button>
