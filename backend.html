@@ -57,6 +57,7 @@
 		.always(function () {
 			var mediaInfo = new chrome.cast.media.MediaInfo(
 				window.location.href.replace(window.location.pathname, '/stream/' + uuid), 'video/x-matroska');
+			mediaInfo.customData = uuid;
 			mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
 			mediaInfo.metadata.title = trackName;
 			mediaInfo.duration = duration; // not used
@@ -80,6 +81,11 @@
 			return;
 		chromeCastMedia = media;
 		$('#currentTrack').text(chromeCastMedia.media.metadata.title);
+		$.ajax({
+			dataType: 'json',
+			method: 'POST',
+			url: '/streamuuid/' + chromeCastMedia.media.customData
+		});
 		waitForNextPlay = false;
 	}
 

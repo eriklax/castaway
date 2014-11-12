@@ -49,11 +49,11 @@
 			function streamInfo() {
 				$.ajax({
 					dataType: 'json',
-					url: '/streaminfo'
+					url: '/streamuuid'
 				})
 				.done(function (obj) {
-					document.title = obj.name;
-					var row = $('#playlist td').removeClass('highlight').filterByData('id', obj.id)[0];
+					document.title = obj.uuid;
+					var row = $('#playlist td').removeClass('highlight').filterByData('uuid', obj.uuid)[0];
 					$(row).addClass('highlight');
 				})
 				.always(function () {
