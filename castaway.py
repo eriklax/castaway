@@ -96,27 +96,25 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 			return
 
 		# repeat current uuid on /next
-		if restURI[0:2] == ['set', 'repeat']:
+		if restURI[0:2] == ['set', 'repeat'] and len(restURI) == 3:
 			self.send_response(200)
 			self.send_header('Content-Type', 'application/json')
 			self.end_headers()
 			playList.repeat = restURI[2] == '1'
 			self.wfile.write(json.dumps({'repeat': playList.repeat}))
-			castActionQueue.append(json.dumps({'repeat': playList.repeat}))
 			return
 
 		# shuffle on /next
-		if restURI[0:2] == ['set', 'shuffle']:
+		if restURI[0:2] == ['set', 'shuffle'] and len(restURI) == 3:
 			self.send_response(200)
 			self.send_header('Content-Type', 'application/json')
 			self.end_headers()
 			playList.shuffle = restURI[2] == '1'
 			self.wfile.write(json.dumps({'shuffle': playList.shuffle}))
-			castActionQueue.append(json.dumps({'shuffle': playList.shuffle}))
 			return
 
 		# volume control
-		if restURI[0:2] == ['set', 'volume']:
+		if restURI[0:2] == ['set', 'volume'] and len(restURI) == 3:
 			self.send_response(200)
 			self.send_header('Content-Type', 'application/json')
 			self.end_headers()
@@ -125,7 +123,7 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 			castActionQueue.append(json.dumps({'volume': castVolume}))
 			return
 
-		if restURI[0:2] == ['set', 'mute']:
+		if restURI[0:2] == ['set', 'mute'] and len(restURI) == 3:
 			self.send_response(200)
 			self.send_header('Content-Type', 'application/json')
 			self.end_headers()
@@ -229,6 +227,11 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 			else:
 				self.wfile.write(castActionQueue.pop(0))
 			return
+
+		self.send_response(500)
+		self.send_header('Content-Type', 'application/json')
+		self.end_headers()
+		self.wfile.write(json.dumps({'error': 'unsupported REST call'}))
 		return
 
 class FastrebindServer(SocketServer.ThreadingTCPServer):
