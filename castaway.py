@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import SimpleHTTPServer, SocketServer, socket
-import urllib, subprocess, json, os, sys
+import urllib, subprocess, json, sys
 import playlist
 
 ffmpegBinary = False
@@ -22,6 +22,7 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 				self.end_headers()
 				self.wfile.write('use 127.0.0.1 when adding files')
 				return
+
 			global playlist
 			track = self.rfile.read(int(self.headers.getheader('content-length')))
 			item = playList.insert(track)
@@ -34,7 +35,6 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 			self.send_header('Content-Type', 'application/json')
 			self.end_headers()
 			castingUUID = restURI[1]
-			print 'casting', castingUUID
 			self.wfile.write(json.dumps({'uuid': castingUUID}))
 			return
 		return
@@ -153,11 +153,18 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
 		# get stream info like duration
 		if restURI[0:1] == ['streaminfo'] and len(restURI) == 2:
+			track = playList.gettrack(restURI[1])
+			if not track:
+				self.send_response(404)
+				self.send_header('Content-Type', 'application/json')
+				self.end_headers()
+				self.wfile.write(json.dumps({'error': 'uuid not in playlist'}))
+				return
+
 			self.send_response(200)
 			self.send_header('Content-Type', 'application/json')
 			self.end_headers()
 
-			track = playList.gettrack(restURI[1])
 			ffmpeg = [
 						ffmpegBinary,
 						'-i', track.path
@@ -178,6 +185,14 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
 		# stream a uuid
 		if restURI[0:1] == ['stream'] and len(restURI) == 2:
+			track = playList.gettrack(restURI[1])
+			if not track:
+				self.send_response(404)
+				self.send_header('Content-Type', 'application/json')
+				self.end_headers()
+				self.wfile.write(json.dumps({'error': 'uuid not in playlist'}))
+				return
+
 			self.send_response(200)
 			self.send_header('Content-Type', 'video/x-matroska')
 			self.end_headers()
@@ -186,7 +201,7 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 			ffmpeg = [
 						ffmpegBinary,
 						'-y',
-						'-i', playList.gettrack(restURI[1]).path,
+						'-i', track.path,
 						'-vcodec', 'copy',
 						'-acodec', 'aac',
 						'-strict', '-2',
@@ -208,7 +223,7 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 			return
 
 		# pop action from queue
-		if restURI == ['queue']:
+		if restURI == ['streamqueue']:
 			if len(castActionQueue) == 0:
 				self.wfile.write(json.dumps({}))
 			else:

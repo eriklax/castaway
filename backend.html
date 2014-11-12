@@ -121,7 +121,7 @@
 	function queue() {
 		$.ajax({
 			dataType: 'json',
-			url: '/queue'
+			url: '/streamqueue'
 		})
 		.done(function (obj) {
 			queueDispatch(obj);
