@@ -40,13 +40,14 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 			self.send_response(200)
 			self.send_header('Content-Type', 'text/html')
 			self.end_headers()
-			self.copyfile(urllib.urlopen('index.html'), self.wfile)
+			self.copyfile(urllib.urlopen('mobile.html'), self.wfile)
 			return
-		if restURI == ['mobile']:
+
+		if restURI == ['backend']:
 			self.send_response(200)
 			self.send_header('Content-Type', 'text/html')
 			self.end_headers()
-			self.copyfile(urllib.urlopen('mobile.html'), self.wfile)
+			self.copyfile(urllib.urlopen('backend.html'), self.wfile)
 			return
 
 		if restURI == ['playlist']:

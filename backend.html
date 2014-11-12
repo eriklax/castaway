@@ -55,7 +55,8 @@
 			duration = obj.duration;
 		})
 		.always(function () {
-			var mediaInfo = new chrome.cast.media.MediaInfo(window.location + 'stream', 'video/x-matroska');
+			var mediaInfo = new chrome.cast.media.MediaInfo(
+				window.location.href.replace(window.location.pathname, '/stream'), 'video/x-matroska');
 			mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
 			mediaInfo.metadata.title = trackName;
 			mediaInfo.duration = duration; // not used
