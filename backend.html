@@ -7,6 +7,9 @@
 	body {
 		background-color: lightgray;
 	}
+	h3 {
+		font-family: Helvetica Narrow, sans-serif;
+	}
 	</style>
 	<script type="text/javascript">
 	var chromeCastSession = null;
@@ -89,19 +92,10 @@
 		waitForNextPlay = false;
 	}
 
-	function volume(vol) {
-		chromeCastSession.setReceiverVolumeLevel(vol, onSuccess, onError);
-	}
-	function mute(m) {
-		chromeCastSession.setReceiverMuted(m, onSuccess, onError);
-	}
-	function resume() {
-		chromeCastMedia.play(null, onSuccess, onError);
-	}
-	function pause() {
-		chromeCastMedia.pause(null, onSuccess, onError);
-	}
-
+	function volume(vol) { chromeCastSession.setReceiverVolumeLevel(vol, onSuccess, onError); }
+	function mute(m) { chromeCastSession.setReceiverMuted(m, onSuccess, onError); }
+	function resume() { chromeCastMedia.play(null, onSuccess, onError); }
+	function pause() { chromeCastMedia.pause(null, onSuccess, onError); }
 	function continuousPlay() {
 		if (!chromeCastMedia)
 			return;
@@ -124,27 +118,21 @@
 			url: '/streamqueue'
 		})
 		.done(function (obj) {
-			queueDispatch(obj);
+			if ('volume' in obj) volume(obj.volume);
+			if ('mute' in obj) mute(obj.mute);
+			if ('playback' in obj) {
+				if (obj.playback == 'load')
+					loadTrack(obj.uuid);
+				if (obj.playback == 'pause')
+					pause();
+				if (obj.playback == 'resume')
+					resume();
+			}
+			console.log(obj);
 		})
 		.always(function () {
 			setTimeout(queue, 1000);
 		});
-	}
-
-	function queueDispatch(obj) {
-		if ('volume' in obj)
-			volume(obj.volume);
-		if ('mute' in obj)
-			mute(obj.mute);
-		if ('playback' in obj) {
-			if (obj.playback == 'load')
-				loadTrack(obj.uuid);
-			if (obj.playback == 'pause')
-				pause();
-			if (obj.playback == 'resume')
-				resume();
-		}
-		console.log(obj);
 	}
 	</script>
 </head>

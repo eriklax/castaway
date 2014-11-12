@@ -72,8 +72,8 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 			self.wfile.write(json.dumps(l))
 			return
 
-		# skip-to a uuid
-		if restURI[0:1] == ['skip-to'] and len(restURI) == 2:
+		# play a uuid
+		if restURI[0:1] == ['play'] and len(restURI) == 2:
 			uuid = restURI[1]
 			self.wfile.write(json.dumps({'uuid': uuid}))
 			castActionQueue.append(json.dumps({'playback': 'load', 'uuid': uuid}))
