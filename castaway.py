@@ -19,7 +19,7 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
     def do_POST(self):
 		restURI = [x for x in self.path.split('/') if x]
 
-		# add track from playlist
+		# add track to playlist
 		if restURI == ['playlist']:
 			if self.client_address[0] != '127.0.0.1':
 				self.send_response(403)
@@ -36,6 +36,7 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 			self.wfile.write(json.dumps({'uuid': item.uuid}))
 			return
 
+		# set casting uuid
 		if restURI[0:1] == ['streamuuid'] and len(restURI) == 2:
 			global castUUID
 			self.send_response(200)
@@ -55,14 +56,6 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 		global playList, castUUID
 		restURI = [x for x in self.path.split('/') if x]
 
-		if restURI == ['streamuuid']:
-			self.send_response(200)
-			self.send_header('Content-Type', 'application/json')
-			self.end_headers()
-			castUUID = None
-			self.wfile.write(json.dumps({'uuid': castUUID}))
-			return
-
 		# delete track from playlist
 		if restURI == ['playlist']:
 			if self.client_address[0] != '127.0.0.1':
@@ -78,9 +71,18 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 			status = playList.remove(track)
 			self.wfile.write(json.dumps({'status': status}))
 
-			# skip
+			# skip track if currently playing
 			if track == castUUID:
 				castActionQueue.append(json.dumps({'playback': 'load'}))
+			return
+
+		# delete casting uuid
+		if restURI == ['streamuuid']:
+			self.send_response(200)
+			self.send_header('Content-Type', 'application/json')
+			self.end_headers()
+			castUUID = None
+			self.wfile.write(json.dumps({'uuid': castUUID}))
 			return
 
 		self.send_response(500)

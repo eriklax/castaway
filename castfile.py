@@ -5,6 +5,12 @@ uuid = None
 
 def addtoplaylist(file):
 	global uuid
+	# feel free to suggest more
+	movieExtensions = [
+			'.mkv', '.mp4', '.mpg', '.mpeg', '.avi'
+		]
+	if not os.path.splitext(file)[1] in movieExtensions:
+		return
 	conn = httplib.HTTPConnection('127.0.0.1', 8000)
 	conn.request('POST', '/playlist', file)
 	resp = conn.getresponse()
