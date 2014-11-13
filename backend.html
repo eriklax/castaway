@@ -132,7 +132,13 @@
 				if (obj.playback == 'stop')
 					stop();
 				if (obj.playback == 'load')
-					loadTrack(obj.uuid);
+					if ('uuid' in obj)
+						loadTrack(obj.uuid);
+					else
+						$.ajax({
+							dataType: 'json',
+							url: '/next'
+						});
 				if (obj.playback == 'pause')
 					pause();
 				if (obj.playback == 'resume')

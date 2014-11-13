@@ -26,6 +26,13 @@ class Playlist:
 			if item.uuid == uuid:
 				return item
 		return None
+
+	def remove(self, uuid):
+		for item in self.items:
+			if item.uuid == uuid:
+				self.items.remove(item)
+				return True
+		return False
 	
 	def nexttrack(self, uuid):
 		if self.shuffle and not self.repeat:

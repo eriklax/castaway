@@ -19,6 +19,7 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
     def do_POST(self):
 		restURI = [x for x in self.path.split('/') if x]
 
+		# add track from playlist
 		if restURI == ['playlist']:
 			if self.client_address[0] != '127.0.0.1':
 				self.send_response(403)
@@ -26,7 +27,7 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 				self.wfile.write('use 127.0.0.1 when adding files')
 				return
 
-			global playlist
+			global playList
 			self.send_response(200)
 			self.send_header('Content-Type', 'application/json')
 			self.end_headers()
@@ -43,6 +44,46 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 			castUUID = restURI[1] if len(restURI) > 1 else None
 			self.wfile.write(json.dumps({'uuid': castUUID}))
 			return
+
+		self.send_response(500)
+		self.send_header('Content-Type', 'application/json')
+		self.end_headers()
+		self.wfile.write(json.dumps({'error': 'unsupported REST call'}))
+		return
+
+    def do_DELETE(self):
+		restURI = [x for x in self.path.split('/') if x]
+
+		# delete track from playlist
+		if restURI == ['playlist']:
+			if self.client_address[0] != '127.0.0.1':
+				self.send_response(403)
+				self.end_headers()
+				self.wfile.write('use 127.0.0.1 when adding files')
+				return
+
+			global playList, castUUID
+			self.send_response(200)
+			self.send_header('Content-Type', 'application/json')
+			self.end_headers()
+			track = self.rfile.read(int(self.headers.getheader('content-length')))
+			status = playList.remove(track)
+			self.wfile.write(json.dumps({'status': status}))
+
+			# skip
+			if track == castUUID:
+				castActionQueue.append(json.dumps({'playback': 'load'}))
+			return
+
+		self.send_response(500)
+		self.send_header('Content-Type', 'application/json')
+		self.end_headers()
+		self.wfile.write(json.dumps({'error': 'unsupported REST call'}))
+		return
+
+    def do_HEAD(self):
+		self.send_response(500)
+		self.end_headers()
 		return
 
     def do_GET(self):
@@ -289,8 +330,8 @@ if __name__ == '__main__':
 		selfAddr = args.lan_ip
 
 	# Start server
+	httpd = FastrebindServer(bindAddr, ChromeCast)
 	try:
-		httpd = FastrebindServer(bindAddr, ChromeCast)
 		print 'Ready to CastAway'
 		print
 		print 'Google Chromecast: http://127.0.0.1:' + str(bindAddr[1]) + '/backend'
@@ -298,4 +339,11 @@ if __name__ == '__main__':
 		print
 		httpd.serve_forever()
 	except KeyboardInterrupt:
+		castActionQueue.append(json.dumps({'playback': 'stop'}))
+		try:
+			print 'Stopping casting...'
+			while len(castActionQueue):
+				httpd.handle_request();
+		except KeyboardInterrupt:
+			pass
 		httpd.socket.close()
