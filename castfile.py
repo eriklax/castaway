@@ -32,13 +32,16 @@ def tree(path):
             tree(f)
 
 if __name__ == '__main__':
+    # don't autostart when folders are queued
+    playFile = False
     for f in sys.argv[1:]:
        if os.path.isfile(f):
            addtoplaylist(f)
+           playFile = True
        if os.path.isdir(f):
            tree(f)
-    if uuid:
-		conn = httplib.HTTPConnection('127.0.0.1', 8000)
-		conn.request('GET', '/play/' + uuid)
-		conn.getresponse()
-		conn.close()
+    if uuid and playFile:
+        conn = httplib.HTTPConnection('127.0.0.1', 8000)
+        conn.request('GET', '/play/' + uuid)
+        conn.getresponse()
+        conn.close()
