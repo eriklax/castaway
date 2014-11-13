@@ -27,6 +27,12 @@
 				initSession(session);
 				if (session.media.length)
 					initMedia(session.media[0]);
+				else
+					$.ajax({
+						dataType: 'json',
+						method: 'DELETE',
+						url: '/streamuuid'
+					});
 			},
 			function (s) {
 				console.log('chrome.cast.SessionRequest.receiver ' + s);
@@ -80,8 +86,6 @@
 	}
 
 	function initMedia(media) {
-		if (media == undefined)
-			return;
 		chromeCastMedia = media;
 		$('#currentTrack').text(chromeCastMedia.media.metadata.title);
 		$.ajax({
@@ -96,15 +100,22 @@
 	function mute(m) { chromeCastSession.setReceiverMuted(m, onSuccess, onError); }
 	function resume() { chromeCastMedia.play(null, onSuccess, onError); }
 	function pause() { chromeCastMedia.pause(null, onSuccess, onError); }
-	function stop() { chromeCastMedia.stop(null, onSuccess, onError); }
+	function stop() {
+		$.ajax({
+			dataType: 'json',
+			method: 'DELETE',
+			url: '/streamuuid'
+		});
+		chromeCastMedia.stop(null, onSuccess, onError);
+	}
 	function continuousPlay() {
 		if (!chromeCastMedia)
 			return;
 		if (chromeCastMedia.playerState == 'PLAYING' && chromeCastMedia.idleReason == null) {
 			$.ajax({
 				dataType: 'json',
-				method: 'POST',
-				url: '/streamuuid/'
+				method: 'DELETE',
+				url: '/streamuuid'
 			});
 		}
 		console.log('continuousPlay: ' + chromeCastMedia.playerState + ' ' + chromeCastMedia.idleReason);
