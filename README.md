@@ -1,5 +1,3 @@
-castaway
-========
 CastAway is a Google Chromecast streaming server (with a responsive playlist interface) with REST API written in Python (and remuxing using ffmpeg)
 
 Requirements
@@ -28,10 +26,10 @@ Running
    
    `curl http://127.0.0.1:8000/next`
 
-4. Open Google Chrome and open `http://127.0.0.1:8000/admin`, enable casting (page should turn green) and minimize window
+4. Open Google Chrome and open http://127.0.0.1:8000/backend, enable casting (page should turn green) and minimize window
    
    `open -a 'Google Chrome' http://127.0.0.1:8000/backend`
 
 5. Open http://127.0.0.1:8000/ (or LAN-IP) to control the playback using any browser/device
    
-   open -a 'Google Chrome' http://127.0.0.1:8000/`
+   `open -a 'Google Chrome' http://127.0.0.1:8000/`
