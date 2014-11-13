@@ -5,6 +5,7 @@ import urllib, subprocess, json, sys
 import playlist
 
 ffmpegBinary = False
+selfIP = None
 castVolume = 1
 castMute = False
 castActionQueue = []
@@ -191,6 +192,7 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 			l['name'] = track.name
 			l['path'] = track.path
 			l['uuid'] = track.uuid
+			l['streamurl'] = 'http://' + selfIP + ':8000/stream/'
 			self.wfile.write(json.dumps(l))
 			return
 
@@ -252,15 +254,21 @@ class FastrebindServer(SocketServer.ThreadingTCPServer):
 		self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self.socket.bind(self.server_address)
 
-p = subprocess.Popen(['which', 'ffmpeg', './ffmpeg'], stdout=subprocess.PIPE)
-ffmpegBinary = p.communicate()[0].split('\n')[0]
-if not ffmpegBinary:
-	print 'missing ffmpeg, go get it! https://www.ffmpeg.org/download.html'
-	sys.exit(1)
+if __name__ == "__main__":
+	p = subprocess.Popen(['which', 'ffmpeg', './ffmpeg'], stdout=subprocess.PIPE)
+	ffmpegBinary = p.communicate()[0].split('\n')[0]
+	if not ffmpegBinary:
+		print 'missing ffmpeg, go get it! https://www.ffmpeg.org/download.html'
+		sys.exit(1)
 
-try:
-	httpd = FastrebindServer(('0.0.0.0', 8000), ChromeCast)
-	print 'Ready to CastAway!'
-	httpd.serve_forever()
-except KeyboardInterrupt:
-	httpd.socket.close()
+	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+	s.connect(("example.com", 80))
+	selfIP = s.getsockname()[0]
+	s.close()
+
+	try:
+		httpd = FastrebindServer(('0.0.0.0', 8000), ChromeCast)
+		print "Ready to CastAway! (trying to use {0} as source IP when casting...)".format(selfIP)
+		httpd.serve_forever()
+	except KeyboardInterrupt:
+		httpd.socket.close()

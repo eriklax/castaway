@@ -49,6 +49,7 @@
 	function loadTrack(uuid) {
 		var trackName = 'CastAway';
 		var duration = null;
+		var streamsrc = window.location.href.replace(window.location.pathname, '/stream/');
 		$.ajax({
 			dataType: 'json',
 			url: '/streaminfo/' + uuid
@@ -56,10 +57,9 @@
 		.done(function (obj) {
 			trackName = obj.name;
 			duration = obj.duration;
-		})
-		.always(function () {
-			var mediaInfo = new chrome.cast.media.MediaInfo(
-				window.location.href.replace(window.location.pathname, '/stream/' + uuid), 'video/x-matroska');
+			if (streamsrc == 'http://127.0.0.1:8000/stream/')
+				streamsrc = obj.streamurl;
+			var mediaInfo = new chrome.cast.media.MediaInfo(streamsrc + uuid, 'video/x-matroska');
 			mediaInfo.customData = uuid;
 			mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
 			mediaInfo.metadata.title = trackName;

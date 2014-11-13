@@ -13,15 +13,15 @@ Start the castaway server.
 ```
 python castaway.py
 ```
-Go to your LAN IP (eg. http://192.168.1.71:8000/backend), 127.0.0.1 will NOT work. As of now, it should turn "limegreen" when ready :)
+If the LAN IP showing up in the output on the same network as the chromecast you may go to http://127.0.0.1:8000/ else, use the correct local LAN IP eg. http://192.168.1.71:8000/backend. Enable chromecast when asked and it should turn "limegreen" when ready :)
 ```
-open -a 'Google Chrome' http://192.168.1.71:8000/backend
+open -a 'Google Chrome' http://127.0.0.1:8000/backend
 ```
 Add files to stream using castfile.sh to cast them directly.
 ```
 sh castfile.sh Desktop/Video.mkv
 ```
-Mobile "APP" is available at http://192.168.1.71:8000/
+Mobile "APP" is available at http://127.0.0.1:8000/ (or at your local land address)....
 
 ### REST API
 
