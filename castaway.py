@@ -130,6 +130,9 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
 		# play a uuid
 		if restURI[0:1] == ['play'] and len(restURI) == 2:
+			self.send_response(200)
+			self.send_header('Content-Type', 'application/json')
+			self.end_headers()
 			uuid = restURI[1]
 			self.wfile.write(json.dumps({'uuid': uuid}))
 			castActionQueue.append(json.dumps({'playback': 'load', 'uuid': uuid}))

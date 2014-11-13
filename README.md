@@ -36,7 +36,7 @@ Running
 2. Add files to playlist using REST by POST'ing them to /playlist
    
    `find ~/Movies -name "*.mp4" -exec curl -X POST -d {} http://127.0.0.1:8000/playlist \;`
-   or run `sh castfile.sh ~/Movies/Video.mkv` to play a single file (step 2 and 3)
+   or run `python castfile.py ~/Movies/Video.mkv` to play a single file (step 2 and 3)
 
 3. Make it begin playing on connect
    
