@@ -10,6 +10,16 @@ Installation
 ------------
 castaway.py requires `ffmpeg` (http://ffmpeg.org/) in the `$PATH` or `$PWD` (in same directory) in order to remux files to mkv, and convert the sound to aac), the flags to `ffmpeg` are not in away way optimized for you, but they worked for me.
 
+Install shell extensions in Mac OSX
+-----------------------------------
+In `Automator` create a new `Service`
+
+1. Service receives selected `files ore folders` in `Finder`
+2. Add a new `Run Shell Script` action, us Shell `/usr/bin/python`, Pass input `as arguments`.
+3. Paste the content of `castfile.py` (not castaway.py)
+
+In `Finder`s context menu a new service is now available, select a file and CastAway!
+
 Running
 -------
 
