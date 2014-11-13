@@ -16,7 +16,13 @@ In `Automator` create a new `Service`
 
 1. Service receives selected `files ore folders` in `Finder`
 2. Add a new `Run Shell Script` action, us Shell `/usr/bin/python`, Pass input `as arguments`.
-3. Paste the content of `castfile.py` (not castaway.py)
+3. Paste the content below, but correct the path for your `castfile.py`
+
+```
+#!/usr/bin/env python
+
+execfile("/Users/erik/castaway/castfile.py")
+```
 
 In `Finder`s context menu a new service is now available, select a file and CastAway!
 
