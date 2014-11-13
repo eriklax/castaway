@@ -1,16 +1,18 @@
 #!/usr/bin/env python
 
 import SimpleHTTPServer, SocketServer, socket
-import urllib, subprocess, json, sys
+import argparse, urllib, subprocess, json, sys
 import playlist
 
-ffmpegBinary = False
-selfIP = None
+bindAddr = ('0.0.0.0', 8000)
+selfAddr = None
+
+ffmpegPath = False
 castVolume = 1
 castMute = False
 castActionQueue = []
 
-castingUUID = None
+castUUID = None
 playList = playlist.Playlist()
 
 class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
@@ -25,25 +27,28 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 				return
 
 			global playlist
+			self.send_response(200)
+			self.send_header('Content-Type', 'application/json')
+			self.end_headers()
 			track = self.rfile.read(int(self.headers.getheader('content-length')))
 			item = playList.insert(track)
 			self.wfile.write(json.dumps({'uuid': item.uuid}))
 			return
 
 		if restURI[0:1] == ['streamuuid']:
-			global castingUUID
+			global castUUID
 			self.send_response(200)
 			self.send_header('Content-Type', 'application/json')
 			self.end_headers()
-			castingUUID = restURI[1] if len(restURI) > 1 else None
-			self.wfile.write(json.dumps({'uuid': castingUUID}))
+			castUUID = restURI[1] if len(restURI) > 1 else None
+			self.wfile.write(json.dumps({'uuid': castUUID}))
 			return
 		return
 
     def do_GET(self):
 		global castVolume, castMute
-		global ffmpegBinary
-		global castingUUID, playList
+		global ffmpegPath
+		global castUUID, playList
 		restURI = [x for x in self.path.split('/') if x]
 
 		# serve html pages
@@ -84,7 +89,7 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 		# next respects repeat
 		if restURI[0:1] == ['next']:
 			try:
-				track = playList.nexttrack(restURI[1] if len(restURI) > 1 else castingUUID)
+				track = playList.nexttrack(restURI[1] if len(restURI) > 1 else castUUID)
 				self.send_response(200)
 				self.send_header('Content-Type', 'application/json')
 				self.end_headers()
@@ -160,7 +165,7 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 			self.send_response(200)
 			self.send_header('Content-Type', 'application/json')
 			self.end_headers()
-			self.wfile.write(json.dumps({'uuid': castingUUID}))
+			self.wfile.write(json.dumps({'uuid': castUUID}))
 			return
 
 		# get stream info like duration
@@ -178,7 +183,7 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 			self.end_headers()
 
 			ffmpeg = [
-						ffmpegBinary,
+						ffmpegPath,
 						'-i', track.path
 					]
 
@@ -192,7 +197,7 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 			l['name'] = track.name
 			l['path'] = track.path
 			l['uuid'] = track.uuid
-			l['streamurl'] = 'http://' + selfIP + ':8000/stream/'
+			l['streamurl'] = 'http://' + selfAddr + ':' + str(bindAddr[1]) + '/stream/'
 			self.wfile.write(json.dumps(l))
 			return
 
@@ -212,7 +217,7 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
 			# add support for subtitles...
 			ffmpeg = [
-						ffmpegBinary,
+						ffmpegPath,
 						'-y',
 						'-i', track.path,
 						'-vcodec', 'copy',
@@ -222,7 +227,7 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 						'-f', 'matroska',
 						'-'
 					]
-			
+
 			null = open('/dev/null', 'w')
 			p = subprocess.Popen(ffmpeg, shell=False, stdin=None, stderr=null, stdout=subprocess.PIPE, bufsize=0)
 			byte = p.stdout.read(1024 * 1024)
@@ -231,7 +236,7 @@ class ChromeCast(SimpleHTTPServer.SimpleHTTPRequestHandler):
 						self.wfile.write(byte)
 						self.wfile.flush()
 					except:
-						return	
+						return
 					byte = p.stdout.read(1024 * 1024)
 			return
 
@@ -254,21 +259,43 @@ class FastrebindServer(SocketServer.ThreadingTCPServer):
 		self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self.socket.bind(self.server_address)
 
-if __name__ == "__main__":
-	p = subprocess.Popen(['which', 'ffmpeg', './ffmpeg'], stdout=subprocess.PIPE)
-	ffmpegBinary = p.communicate()[0].split('\n')[0]
-	if not ffmpegBinary:
-		print 'missing ffmpeg, go get it! https://www.ffmpeg.org/download.html'
-		sys.exit(1)
+if __name__ == '__main__':
+	parser = argparse.ArgumentParser()
+	parser.add_argument('--lan-ip', help='LAN address (on the same LAN as your Chromecast)')
+	parser.add_argument('--ffmpeg', help='Path to ffmpeg')
+	args = parser.parse_args()
 
-	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-	s.connect(("example.com", 80))
-	selfIP = s.getsockname()[0]
-	s.close()
+	# Try to find ffmpeg in $PATH or $PWD
+	if not args.ffmpeg:
+		p = subprocess.Popen(['which', 'ffmpeg', './ffmpeg'], stdout=subprocess.PIPE)
+		ffmpegPath = p.communicate()[0].split('\n')[0]
+		if not ffmpegPath:
+			print "Couldn't find 'ffmpeg' in $PATH or $PWD. https://www.ffmpeg.org/download.html"
+			sys.exit(1)
+	else:
+		ffmpegPath = args.ffmpeg
 
+	# Try to find
+	if not args.lan_ip:
+		try:
+			s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+			s.connect(('example.com', 80))
+			selfAddr = s.getsockname()[0]
+			s.close()
+		except socket.error:
+			print "Couldn't find your LAN address (on the same LAN as your Chromecast), use --lan-ip 1.1.1.1"
+			sys.exit(1)
+	else:
+		selfAddr = args.lan_ip
+
+	# Start server
 	try:
-		httpd = FastrebindServer(('0.0.0.0', 8000), ChromeCast)
-		print "Ready to CastAway! (trying to use {0} as source IP when casting...)".format(selfIP)
+		httpd = FastrebindServer(bindAddr, ChromeCast)
+		print 'Ready to CastAway'
+		print
+		print 'Google Chromecast: http://127.0.0.1:' + str(bindAddr[1]) + '/backend'
+		print 'Playlist and SDK:  http://' + selfAddr + ':' + str(bindAddr[1])
+		print
 		httpd.serve_forever()
 	except KeyboardInterrupt:
 		httpd.socket.close()

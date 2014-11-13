@@ -74,9 +74,7 @@
 				});
 			}
 			$(document).ready(function() {
-
 				reloadPlaylist();
-
 				$('#reload').on('click', function() { reloadPlaylist(); });
 				$('#pause').on('click', function() { $.ajax({ dataType: 'json', url: '/pause' }) });
 				$('#resume').on('click', function() { $.ajax({ dataType: 'json', url: '/resume' }) });
@@ -119,7 +117,7 @@
 			</p>
 			<table class="table">
 				<thead>
-					<th>Track</th>
+					<th>Playlist</th>
 				</thead>
 				<tbody id="playlist">
 					<!-- playlist filled by ajax -->
