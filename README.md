@@ -33,7 +33,7 @@ Running
    
    `python castaway.py`
 
-2. Open Google Chrome and browse to http://127.0.0.1:8000/backend, enable casting (page should turn green, reload in wrost case) and minimize window.
+2. Open Google Chrome and browse to http://127.0.0.1:8000/backend, enable casting (page should turn green, reload in worst case) and the minimize window (it must be kept open).
    
    `open -a 'Google Chrome' http://127.0.0.1:8000/backend`
 
