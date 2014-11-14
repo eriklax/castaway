@@ -24,7 +24,7 @@ In `Automator` create a new `Service`.
 execfile("/Users/erik/castaway/castfile.py")
 ```
 
-In `Finder`s context menu a new service is now available, select a file or folder and CastAway!
+In `Finder` a new context menu option is available, select a file or folder and CastAway!
 
 Running
 -------
@@ -33,7 +33,7 @@ Running
    
    `python castaway.py`
 
-2. Open Google Chrome and browse to http://127.0.0.1:8000/backend, enable casting (page should turn green, reload in worst case) and the minimize window (it must be kept open).
+2. Open Google Chrome and browse to http://127.0.0.1:8000/backend, enable casting (page should turn green, reload in worst case) and then minimize the window (it must be kept open).
    
    `open -a 'Google Chrome' http://127.0.0.1:8000/backend`
 
