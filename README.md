@@ -1,3 +1,7 @@
+THERE'S A BETTER SOLUTION :)
+---------------------------
+See https://github.com//eriklax/c8tsender/
+
 CastAway is a Google Chromecast streaming server (with a responsive playlist interface) with REST API written in Python (and remuxing using ffmpeg).
 
 Requirements
